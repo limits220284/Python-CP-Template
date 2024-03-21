@@ -1,3 +1,33 @@
+## 逆元模板
+
+```python
+import sys
+input = lambda: sys.stdin.readline().rstrip("\r\n")
+
+MOD = 1000000007
+n = int(input())
+MX = 100010
+fac = [0] * MX
+fac[0] = 1
+for i in range(1, MX):
+    fac[i] = fac[i - 1] * i % MOD
+
+inv_fac = [0] * MX
+inv_fac[MX - 1] = pow(fac[MX - 1], MOD - 2, MOD)
+for i in range(MX - 1, 0, -1):
+    inv_fac[i - 1] = inv_fac[i] * i % MOD
+
+def comb(n: int, k: int) -> int:
+    return fac[n] * inv_fac[k] % MOD * inv_fac[n - k] % MOD
+
+def solve():
+    a, b = map(int, input().split())
+    print(comb(a, b))
+    
+for _ in range(n):
+    solve()
+```
+
 ## 高斯消元法求解线性方程组
 
 ```python
