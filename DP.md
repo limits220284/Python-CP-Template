@@ -2,6 +2,8 @@
 
 ### 0/1 背包
 
+- $\text{N}$件物品，容量$\text{V}$背包，每件物品只能使用一次
+
 ```python
 # 二维动态规划写法
 n, v = map(int, input().split())
@@ -43,6 +45,29 @@ for i in range(1, n+1):
         f[j] = max(f[j], f[j-w[i]] + p[i])
 print(f[v])
 ```
+
+### 完全背包
+
+- $\text{N}$件物品，容量$\text{V}$背包，每件物品无限使用
+
+```python
+n, v = map(int, input().split())
+P = []
+W = []
+for _ in range(n):
+    w, p = map(int, input().split())
+    P.append(p)
+    W.append(w)
+f = [[0] * (v + 1) for _ in range(n + 1)]
+for i in range(1, n + 1):
+    for j in range(1, v + 1):
+        f[i][j] = f[i - 1][j]
+        if j >= W[i - 1]:
+            f[i][j] = max(f[i][j], f[i][j - W[i - 1]] + P[i - 1])
+print(f[n][v])
+```
+
+### 分组背包
 
 ## 换根DP
 
