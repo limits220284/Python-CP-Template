@@ -346,3 +346,96 @@ class Segtree:
             ans += self.query(u << 1 | 1, l, r)
         return ans
 ```
+
+## AVL平衡树
+
+```python
+import random
+class Node:
+    def __init__(self):
+        self.l = self.r = 0
+        self.key = self.val = 0
+        self.cnt = self.size = 0    #这里初始值设为1会出错
+
+class SortedList:
+    def __init__(self, n):
+        self.tr = [Node() for i in range(n)]
+        self.root = self.idx = 0
+
+    def pushup(self, p):
+        self.tr[p].size = self.tr[self.tr[p].l].size + self.tr[self.tr[p].r].size + self.tr[p].cnt
+
+    def get_node(self, key):
+        self.idx += 1
+        self.tr[self.idx].key, self.tr[self.idx].val, self.tr[self.idx].cnt, self.tr[self.idx].size = key, random.random(), 1, 1
+        return self.idx
+
+    def zig(self, p):  #右旋   这里的p相当于指针，每次更改节点位置都要相应更改指针位置
+        q = self.tr[p].l
+        self.tr[p].l = self.tr[q].r; self.tr[q].r = p; p = q
+        self.pushup(st.tr[p].r); self.pushup(p)
+        return p
+
+    def zag(self, p):   #左旋
+        q = self.tr[p].r
+        self.tr[p].r = self.tr[q].l; self.tr[q].l = p; p = q
+        self.pushup(self.tr[p].l); self.pushup(p)
+        return p
+
+    def build(self):
+        self.root = self.get_node(-float("inf"))    #建立两个哨兵节点root为1,root.r为2
+        self.tr[self.root].r = self.get_node(float("inf"))
+        self.pushup(self.root)
+        if self.tr[1].val < self.tr[2].val: root = self.zag(self.root)
+
+    def insert(self, p, key):
+        if not p: p = self.get_node(key)
+        elif self.tr[p].key == key: self.tr[p].cnt += 1
+        elif self.tr[p].key > key:
+            self.tr[p].l = self.insert(self.tr[p].l, key)
+            if self.tr[self.tr[p].l].val > self.tr[p].val: p = self.zig(p)
+        else:
+            self.tr[p].r = self.insert(self.tr[p].r, key)
+            if self.tr[self.tr[p].r].val > self.tr[p].val: p = self.zag(p)
+        self.pushup(p)
+        return p
+
+    def remove(self, p, key):
+        if not p: return p
+        if self.tr[p].key == key:
+            if self.tr[p].cnt > 1: self.tr[p].cnt -= 1
+            elif self.tr[p].l or self.tr[p].r:
+                if not self.tr[p].r or self.tr[self.tr[p].l].val > self.tr[p].val:
+                    p = self.zig(p)
+                    self.tr[p].r = self.remove(self.tr[p].r, key)   #右旋后当前点位于原点的右子树
+                else:
+                    p = self.zag(p)
+                    self.tr[p].l = self.remove(self.tr[p].l, key)
+            else: p = 0
+        elif self.tr[p].key > key: self.tr[p].l = self.remove(self.tr[p].l, key)
+        else: self.tr[p].r = self.remove(self.tr[p].r, key)
+        self.pushup(p)
+        return p
+
+    def get_rank_by_key(self, p, key):
+        if not p: return 0   #本题中不会出现这种情况
+        if self.tr[p].key == key: return self.tr[self.tr[p].l].size + 1
+        if self.tr[p].key > key: return self.get_rank_by_key(self.tr[p].l, key)
+        return self.tr[self.tr[p].l].size + self.tr[p].cnt + self.get_rank_by_key(self.tr[p].r, key)
+
+    def get_key_by_rank(self, p, rank):
+        if not p: return float("inf")
+        if self.tr[self.tr[p].l].size >= rank: return self.get_key_by_rank(self.tr[p].l, rank)
+        if self.tr[self.tr[p].l].size + self.tr[p].cnt >= rank: return self.tr[p].key
+        return self.get_key_by_rank(self.tr[p].r, rank - self.tr[self.tr[p].l].size - self.tr[p].cnt)
+
+    def get_prev(self, p, key):
+        if not p: return -float("inf")
+        if self.tr[p].key >= key: return self.get_prev(self.tr[p].l, key)
+        return max(self.tr[p].key, self.get_prev(self.tr[p].r, key))
+
+    def get_next(self, p, key):
+        if not p: return float("inf")
+        if self.tr[p].key <= key: return self.get_next(self.tr[p].r, key)
+        return min(self.tr[p].key, self.get_next(self.tr[p].l, key))
+```
